@@ -1,6 +1,10 @@
 #include "song.hpp"
 
-Song::Song() {}
+int Song::nextId = 0;
+
+Song::Song() {
+    id = nextId++;
+}
 
 Song::Song(const Song& s) : id(s.id), title(s.title), artist(s.artist),
     duration(s.duration) {}

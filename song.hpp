@@ -8,6 +8,8 @@
 
 class Song {
         int id;
+        static int nextId;
+
         std::string title;
         std::string artist;
         Time duration;
