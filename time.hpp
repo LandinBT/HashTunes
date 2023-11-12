@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <string>
+#include <sstream> // stringstream
+#include <iomanip> // setfill, setw
 
 class Time {
         unsigned short minute;

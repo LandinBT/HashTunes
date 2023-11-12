@@ -33,7 +33,7 @@ void UserInterface::addSong() {
 
         try {
             songsPtr->insertData(song.getId(), song);
-            titleToIdMap[song.getTitle()] = song.getId();
+            titleToId[song.getTitle()] = song.getId();
             cout << "Cancion agregada correctamente!" << endl;
             }
         catch(const HashTable<int, Song>::Exception& ex) {
@@ -70,7 +70,7 @@ void UserInterface::findSong() {
     cout << endl;
 
     try {
-        int id = titleToIdMap.at(str);
+        int id = titleToId.at(str);
 
         cout << songsPtr->searchData(id).toString() << endl;
         }
@@ -95,7 +95,7 @@ void UserInterface::deleteSong() {
     cout << endl;
 
     try {
-        int id = titleToIdMap.at(str);
+        int id = titleToId.at(str);
         cout << songsPtr->searchData(id).toString() << endl << endl;
         char op;
 
@@ -166,7 +166,7 @@ void UserInterface::deleteAllSongs() {
     enterToContinue();
     }
 
-/*void UserInterface::load() {
+void UserInterface::load() {
     string str;
 
     cout << "Cargar canciones" << endl << endl
@@ -177,6 +177,15 @@ void UserInterface::deleteAllSongs() {
 
     try {
         songsPtr->importFromDisk(str);
+
+        // actulizar titleToId
+        for (int i = 0; i < songsPtr->getSize(); ++i) {
+            if (songsPtr->getElements()[i] != nullptr) {
+                titleToId[songsPtr->getElements()[i]->getData().getTitle()
+                         ] = songsPtr->getElements()[i]->getData().getId();
+                }
+            }
+
         cout << "Datos cargados correctamente!" << endl << endl;
         }
     catch(const ios_base::failure& ex) {
@@ -204,7 +213,7 @@ void UserInterface::save() {
         }
 
     enterToContinue();
-    }*/
+    }
 
 void UserInterface::enterToContinue() {
     cout << "Presiona ENTER para continuar. . .";
@@ -224,8 +233,8 @@ UserInterface::UserInterface() {
              << "3. Borrar cancion" << endl
              << "4. Mostrar canciones" << endl
              << "5. Borrar todas las canciones" << endl
-             //<< "6. Cargar" << endl
-             //<< "7. Guardar" << endl
+             << "6. Cargar" << endl
+             << "7. Guardar" << endl
              << "0. Salir" << endl << endl
              << "Opcion: ";
         cin >> op;
@@ -259,13 +268,13 @@ UserInterface::UserInterface() {
                 deleteAllSongs();
                 break;
 
-            /*case 6:
+            case 6:
                 load();
                 break;
 
             case 7:
                 save();
-                break;*/
+                break;
 
             case 0:
                 cout << "Gracias por usar el programa!" << endl;

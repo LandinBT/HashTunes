@@ -11,7 +11,7 @@
 
 class UserInterface {
     HashTable<int, Song>* songsPtr;
-    std::unordered_map<std::string, int> titleToIdMap;
+    std::unordered_map<std::string, int> titleToId; // titleToIdMap
 
     void addSong();
     void findSong();
@@ -20,8 +20,8 @@ class UserInterface {
     void showSongs();
     void deleteAllSongs();
 
-    /*void load();
-    void save();*/
+    void load();
+    void save();
 
     void enterToContinue();
 

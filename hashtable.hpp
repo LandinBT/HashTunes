@@ -55,11 +55,11 @@ class Cell {
         bool operator > (const Cell&) const;
         bool operator >= (const Cell&) const;
 
-        template <class C, class D>
+        /*template <class C, class D>
         friend std::istream& operator >> (std::istream&, Cell<C,D>&);
 
         template <class C, class D>
-        friend std::ostream& operator << (std::ostream&, const Cell<C,D>&);
+        friend std::ostream& operator << (std::ostream&, const Cell<C,D>&);*/
     };
 
 template <class K, class V>
@@ -100,6 +100,12 @@ class HashTable {
         void insertData(const K&, const V&);
         V searchData(const K&);
         void deleteData(const K&);
+
+        int getSize() const;
+
+        Cell<K, V>** getElements() const {
+            return elements;
+        }
 
         std::string toString() const;
 
@@ -226,7 +232,7 @@ bool Cell<K,V>::operator >= (const Cell& c) const {
     return !(*this < c);
     }
 
-template <class C, class D>
+/*template <class C, class D>
 std::istream& operator >> (std::istream& is, Cell<C,D>& c) {
     std::string str;
 
@@ -241,7 +247,7 @@ std::istream& operator >> (std::istream& is, Cell<C,D>& c) {
 template <class C, class D>
 std::ostream& operator << (std::ostream& os, const Cell<C,D>& c) {
     return os << c.key << "*" << c.data;
-    }
+    }*/
 
 /// HashTable
 template <class K, class V>
@@ -457,6 +463,11 @@ void HashTable<K,V>::deleteData(const K& key) {
     }
 
 template <class K, class V>
+int HashTable<K,V>::getSize() const {
+    return tableSize;
+    }
+
+template <class K, class V>
 std::string HashTable<K,V>::toString() const {
     if(isEmpty()) {
         throw Exception("No hay elementos, tabla vacia");
@@ -505,7 +516,7 @@ void HashTable<K,V>::importFromDisk(const std::string& fileName) {
     while(std::getline(archive, str, '#')) {
         std::stringstream ss(str);
 
-        std::getline(ss, str, '*');
+        std::getline(ss, str, '|');
         key = stoi(str);
 
         ss >> value;
@@ -526,7 +537,7 @@ void HashTable<K,V>::exportToDisk(const std::string& fileName) {
 
     for(int i(0); i < tableSize; ++i) {
         if(elements[i] != nullptr and elements[i]->getDataPtr() != nullptr) {
-            archive << elements[i]->getKey() << "*"
+            archive << elements[i]->getKey() << "|"
                     << elements[i]->getData() << "#";
             }
         }

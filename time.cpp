@@ -22,17 +22,22 @@ Time& Time::operator = (const Time& t) {
 void Time::setMinute(const unsigned short& m) {
     if(isValid(m, second)) {
         minute = m;
-    }
+        }
     }
 
 void Time::setSecond(const unsigned short& s) {
     if(isValid(minute, s)) {
         second = s;
-    }
+        }
     }
 
 std::string Time::toString() const {
-    return std::to_string(minute) + ":" + std::to_string(second);
+    std::stringstream ss;
+
+    ss << std::to_string(minute) << ":"
+       << std::setfill('0') << std::setw(2) << std::to_string(second);
+
+    return ss.str();
     }
 
 unsigned short Time::getMinute() const {
