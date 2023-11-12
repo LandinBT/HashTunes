@@ -6,8 +6,9 @@
 #include <string>
 #include <limits> // numeric_limits
 #include <sstream> // stringstream
+#include <fstream>
 
-#define SIZE 5
+#define SIZE 13
 #define THRESHOLD 0.75
 
 template <class K, class V>
@@ -75,6 +76,8 @@ class HashTable {
 
         void rehashing();
 
+        bool isEmpty() const;
+
     public:
         class Exception : public std::exception {
             public:
@@ -106,7 +109,6 @@ class HashTable {
         void exportToDisk(const std::string&);
     };
 
-
 /// IMPLEMENTATION
 
 /// CELL
@@ -114,7 +116,7 @@ template <class K, class V>
 Cell<K,V>::Cell() : dataPtr(nullptr) {}
 
 template <class K, class V>
-Cell<K,V>::Cell(const Cell& c) : key(c.key), dataPtr(c.dataPtr) {}
+Cell<K,V>::Cell(const Cell& c) : key(c.key), dataPtr(new V(*(c.dataPtr))) {}
 
 template <class K, class V>
 Cell<K,V>::Cell(const K& k) : key(k) {}
@@ -127,8 +129,11 @@ Cell<K,V>::Cell(const K& k, const V& d) : key(k), dataPtr(d) {}
 
 template <class K, class V>
 Cell<K,V>& Cell<K,V>::operator = (const Cell& c) {
-    key = c.key;
-    dataPtr = c.dataPtr;
+    if(this != &c) {
+        key = c.key;
+        delete dataPtr;
+        dataPtr = new V(*(c.dataPtr));
+        }
 
     return *this;
     }
@@ -344,9 +349,24 @@ void HashTable<K,V>::rehashing() {
     }
 
 template <class K, class V>
+bool HashTable<K,V>::isEmpty() const {
+    for(int i(0); i < tableSize; ++i) {
+        if(elements[i] != nullptr and elements[i]->getDataPtr() != nullptr) {
+            return false;
+            }
+        }
+
+    return true;
+    }
+
+template <class K, class V>
 HashTable<K,V>::HashTable() {
     tableSize = SIZE;
     elements = new Cell<K,V>*[tableSize];
+
+    for(int i(0); i < tableSize; ++i) {
+        elements[i] = nullptr;
+        }
     }
 
 template <class K, class V>
@@ -397,6 +417,10 @@ void HashTable<K,V>::insertData(const K& key, const V& value) {
 
 template <class K, class V>
 V HashTable<K,V>::searchData(const K& key) {
+    if(isEmpty()) {
+        throw Exception("No hay elementos, tabla vacia");
+        }
+
     int index = hashFunction(key);
 
     // use linear probing to find the cell with the given key
@@ -414,6 +438,10 @@ V HashTable<K,V>::searchData(const K& key) {
 
 template <class K, class V>
 void HashTable<K,V>::deleteData(const K& key) {
+    if(isEmpty()) {
+        throw Exception("No hay elementos, tabla vacia");
+        }
+
     int index = hashFunction(key);
 
     while (elements[index] != nullptr and elements[index]->getKey() != key) {
@@ -430,12 +458,17 @@ void HashTable<K,V>::deleteData(const K& key) {
 
 template <class K, class V>
 std::string HashTable<K,V>::toString() const {
+    if(isEmpty()) {
+        throw Exception("No hay elementos, tabla vacia");
+        }
+
     std::stringstream ss;
 
     for(int i(0); i < tableSize; ++i) {
-        if(elements[i] != nullptr) {
+        if(elements[i] != nullptr and elements[i]->getDataPtr() != nullptr) {
             ss << "#" << i << '\n'
-               << elements[i]->getData().toString() << '\n';
+               << elements[i]->getData().toString() << '\n'
+               << '\n';
             }
         }
 
@@ -444,6 +477,10 @@ std::string HashTable<K,V>::toString() const {
 
 template <class K, class V>
 void HashTable<K,V>::deleteAll() {
+    if(isEmpty()) {
+        throw Exception("No hay elementos, tabla vacia");
+        }
+
     for(int i(0); i < tableSize; ++i) {
         delete elements[i];
         elements[i] = nullptr;
@@ -454,13 +491,47 @@ void HashTable<K,V>::deleteAll() {
     }
 
 template <class K, class V>
-void HashTable<K,V>::importFromDisk(const std::string&) {
+void HashTable<K,V>::importFromDisk(const std::string& fileName) {
+    std::fstream archive(fileName, std::ios_base::in);
 
+    if(!archive.is_open()) {
+        throw std::ios_base::failure("No se pudo abrir el archivo para lectura");
+        }
+
+    K key;
+    V value;
+    std::string str;
+
+    while(std::getline(archive, str, '#')) {
+        std::stringstream ss(str);
+
+        std::getline(ss, str, '*');
+        key = stoi(str);
+
+        ss >> value;
+
+        insertData(key, value);
+        }
+
+    archive.close();
     }
 
 template <class K, class V>
-void HashTable<K,V>::exportToDisk(const std::string&) {
+void HashTable<K,V>::exportToDisk(const std::string& fileName) {
+    std::fstream archive(fileName, std::ios_base::out);
 
+    if(!archive.is_open()) {
+        throw std::ios_base::failure("No se pudo abrir el archivo para escritura");
+        }
+
+    for(int i(0); i < tableSize; ++i) {
+        if(elements[i] != nullptr and elements[i]->getDataPtr() != nullptr) {
+            archive << elements[i]->getKey() << "*"
+                    << elements[i]->getData() << "#";
+            }
+        }
+
+    archive.close();
     }
 
 #endif // HASHTABLE_HPP_INCLUDED
